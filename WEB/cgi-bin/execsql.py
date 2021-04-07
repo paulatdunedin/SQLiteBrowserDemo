@@ -35,34 +35,40 @@ th {{border:1px solid; text-align:left;}}
 <body>
 <h2>{query}</h2>''')
 #setup the SQL for the query and execute the query
-try:
-  curs.execute(query)
-  #fetch all the results into a list (of tuples)
-  rows = curs.fetchall()
-  if curs.rowcount>0:
-    print(f"{curs.rowcount} row(s) affected<br>")
-  elif len(rows)==0:
-    print("No rows returned<br>")
-  else:
-    print("<table border=1>")
-    cols = [description[0] for description in curs.description]
-    for col in cols:
-        print(f"<td><b>{col}</b></td>")
-    for row in rows:
-      print("<tr>")
-      #for each item in the tuple
-      for item in row:
-        if item == None:
-          print("<td>(null)</td>")
-        else:  
-          print(f"<td>{item}</td>")
-      print("</tr>")
-    print("</table>")
-except sqlite3.Error as err:
-  print(f'<h2>Error: {err} </h2>')
+#create, drop and alter commands prohibited!
+excludeCommands = ['create', 'drop', 'alter', 'vacuum']
+if any(exclude in query.lower() for exclude in excludeCommands):
+  print(f'<h2>Sorry: DDL commands not allowed here!</h2>')
+else:
+  try:
+    curs.execute(query)
+    #fetch all the results into a list (of tuples)
+    rows = curs.fetchall()
+    if curs.rowcount>0:
+      print(f"{curs.rowcount} row(s) affected<br>")
+    elif len(rows)==0:
+      print("No rows returned<br>")
+    else:
+      print("<table border=1>")
+      cols = [description[0] for description in curs.description]
+      for col in cols:
+          print(f"<td><b>{col}</b></td>")
+      for row in rows:
+        print("<tr>")
+        #for each item in the tuple
+        for item in row:
+          if item == None:
+            print("<td>(null)</td>")
+          else:  
+            print(f"<td>{item}</td>")
+        print("</tr>")
+      print("</table>")
+  except sqlite3.Error as err:
+    print(f'<h2>Error: {err} </h2>')
 print('<br><button onclick="window.history.back()">Go Back</button>')
 print("</body>")
 print("</html>")
 #commit any changes and close the connection to the database
+#comment out the line below to prevent users committing changes !!
 connection.commit()
 connection.close()
